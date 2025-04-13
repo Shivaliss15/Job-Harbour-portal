@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import serverless  from 'serverless-http';
 import  './config/instrument.js '
 import 'dotenv/config';
 import connectDB from './config/db.js';
@@ -20,7 +21,7 @@ app.use(express.json());
 
 
 //Routes
-app.get('/' ,(rer,res)=> res.send("API working"))
+app.get('/' ,(req,res)=> res.send("API working"))
 app.get('/debug-sentry' ,function mainHandler(rer,res ) { 
     throw new Error("My First Sentry error!")
 }) ;
