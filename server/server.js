@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import serverless  from 'serverless-http';
-import './config/instrument.js'
+import './config/instrument.js';
 import 'dotenv/config';
 import connectDB from './config/db.js';
 import * as Sentry from "@sentry/node"
@@ -24,7 +24,7 @@ app.use(express.json());
 app.get('/' ,(req,res)=> {
     res.send("API working")
 })
-app.get('/debug-sentry' ,function mainHandler(rer,res ) { 
+app.get('/debug-sentry' , function mainHandler(req,res ) { 
     throw new Error("My First Sentry error!")
 }) ;
 app.post('/webhooks' , clerkWebhooks)
