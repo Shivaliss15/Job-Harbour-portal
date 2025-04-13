@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import serverless  from 'serverless-http';
-import  './config/instrument.js '
+import './config/instrument.js'
 import 'dotenv/config';
 import connectDB from './config/db.js';
 import * as Sentry from "@sentry/node"
