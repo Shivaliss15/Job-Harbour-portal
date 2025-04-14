@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import serverless  from 'serverless-http';
 import './config/instrument.js';
 import 'dotenv/config';
 import connectDB from './config/db.js';
@@ -27,7 +26,7 @@ app.get('/' ,(req,res)=> {
 app.get('/debug-sentry' , function mainHandler(req,res ) { 
     throw new Error("My First Sentry error!")
 }) ;
-app.post('/webhooks' , clerkWebhooks)
+app.post('/webhooks', express.raw({ type: 'application/json' }), clerkWebhooks);
 
 //Port
 const PORT = process.env.PORT || 5000 ;
