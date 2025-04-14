@@ -9,7 +9,6 @@ const connectDB = async () => {
 
   try {
     const connectionString = `${process.env.MONGODB_URI}/job-portal`;
-    console.log('Final MongoDB connection string:', connectionString);
     
     // Connect to MongoDB with the URI
     await mongoose.connect(connectionString);
