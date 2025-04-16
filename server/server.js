@@ -6,7 +6,8 @@ import connectDB from './config/db.js';
 import * as Sentry from "@sentry/node"
 import { clerkWebhooks } from './controllers/webhooks.js';
 
-
+import dotenv from 'dotenv';
+dotenv.config();
 
 //Initialize Express
 const app = express();
@@ -16,8 +17,35 @@ await connectDB()
 
 //middlewares
 app.use(cors());
-app.use(express.json());
 
+app.post('/webhooks', express.raw({ type: 'application/json' }), clerkWebhooks);
+
+if (process.env.NODE_ENV !== 'production') {
+    app.post('/dev-webhooks', express.json(), async (req, res) => {
+      try {
+        // Simulate the req.body as stringified JSON (like Clerk sends)
+        const mockReq = {
+          ...req,
+          body: req.body,
+          headers: {
+            ...req.headers,
+            'svix-id': 'test-id',
+            'svix-timestamp': String(Date.now()),
+            'svix-signature': 'test-signature',
+          }
+        };
+  
+        // You can directly test logic without real signature verification
+        await clerkWebhooks(mockReq, res);
+      } catch (error) {
+        console.error("Test Webhook Error:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+      }
+    });
+  }
+  
+
+app.use(express.json());
 
 //Routes
 app.get('/' ,(req,res)=> {
@@ -26,7 +54,7 @@ app.get('/' ,(req,res)=> {
 app.get('/debug-sentry' , function mainHandler(req,res ) { 
     throw new Error("My First Sentry error!")
 }) ;
-app.post('/webhooks', express.raw({ type: 'application/json' }), clerkWebhooks);
+
 
 //Port
 const PORT = process.env.PORT || 5000 ;
