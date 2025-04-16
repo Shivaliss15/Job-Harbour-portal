@@ -8,10 +8,18 @@ export const clerkWebhooks = async (req,res) => {
 
         //crete a Svix instance with clerk webhook secret.
 
-        console.log("Webhook secret:", process.env.CLERK_WEBHOOK_SECRET)
-        const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET)
+        if (!process.env.CLERK_WEBHOOK_SECRET) {
+            console.error('Webhook secret not configured');
+            return res.status(500).json({ 
+              success: false, 
+              message: 'Server configuration error' 
+            });
+          }
         
-        const payload = req.rawBody || JSON.stringify(req.body);        
+        
+        const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET)
+        const payload = req.rawBody || JSON.stringify(req.body);   
+
         await whook.verify(payload, {
 
         "svix-id": req.headers["svix-id"],
@@ -19,10 +27,14 @@ export const clerkWebhooks = async (req,res) => {
         "svix-signature": req.headers["svix-signature"],
        })
     
+        if (!svix_id || !svix_timestamp || !svix_signature) {
+          return res.status(400).json({ message: 'Missing required headers' });
+        }
+
         
 
         //Getting data from request body
-        const {data,type}  = req.body
+        const {data,type}  = req.body;
 
         //Switch case for different events 
         switch (type) {
