@@ -15,7 +15,11 @@ await connectDB()
 
 //middlewares
 app.use(cors());
-app.use(express.json());
+app.use(express.json({
+    verify: (req, res, buf) => {
+      req.rawBody = buf.toString();
+    }
+  }));
 
 //Routes
 app.get('/' ,(req,res)=> {
@@ -24,6 +28,7 @@ app.get('/' ,(req,res)=> {
 app.get('/debug-sentry' , function mainHandler(req,res ) { 
     throw new Error("My First Sentry error!")
 }) ;
+// Add this route for testing only
 
 app.post('/webhooks', clerkWebhooks);
 
