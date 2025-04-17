@@ -1,43 +1,46 @@
 import { Webhook } from 'svix';
 import User from '../models/User.js'
 
+
 //API controller function to manage clerk user with database
 
-export const clerkWebhooks = async (req,res) => {
-   try {
+const clerkWebhooks = async (req,res) => {
+  
 
-        //crete a Svix instance with clerk webhook secret.
+    //crete a Svix instance with clerk webhook secret.
+    const svixId = req.headers['svix-id'];
+    const svixTimestamp = req.headers['svix-timestamp'];
+    const svixSignature = req.headers['svix-signature'];
 
-        if (!process.env.CLERK_WEBHOOK_SECRET) {
-            console.error('Webhook secret not configured');
-            return res.status(500).json({ 
-              success: false, 
-              message: 'Server configuration error' 
-            });
-          }
-        
-        
-        const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET)
-        const payload = req.rawBody || JSON.stringify(req.body);   
+    // Verify webhook signature
+    if (!svixId || !svixTimestamp || !svixSignature) {
+      return res.status(400).json({
+        error: 'Missing svix headers'
+      });
+    }
+    const payload = req.body;
+    const body = JSON.stringify(req.body);
+  
+     // Webhook secret from environment variables
+    const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
+ 
+    try {
+   
+        const whook = new Webhook(webhookSecret)  
 
-        await whook.verify(payload, {
-
-        "svix-id": req.headers["svix-id"],
-        "svix-timestamp": req.headers["svix-timestamp"],
-        "svix-signature": req.headers["svix-signature"],
-       })
+        const evt = whook.verify(body, {
+            'svix-id': svixId,
+            'svix-timestamp': svixTimestamp,
+            'svix-signature': svixSignature
+        });
     
-        if (!svix_id || !svix_timestamp || !svix_signature) {
-          return res.status(400).json({ message: 'Missing required headers' });
-        }
 
-        
-
-        //Getting data from request body
-        const {data,type}  = req.body;
+        // Handle different event types
+        const { type, data } = evt;
 
         //Switch case for different events 
         switch (type) {
+
             case 'user.created':{
                 
                 const userData ={
@@ -76,14 +79,14 @@ export const clerkWebhooks = async (req,res) => {
                 break;
             }
             
-            
-            default:
-                break;
         }
+        res.status(200).json({ success: true });
 
-    } catch (error) {
-        console.log(error.message);
-        res.json({success :false , message : error.message})
+    } catch (err) {
+        console.error('Error verifying webhook:', err);
+        return res.status(400).json({success :false , message : err})
         
     }
-}
+};
+
+export default clerkWebhooks;
