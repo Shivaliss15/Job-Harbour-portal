@@ -4,7 +4,7 @@ import User from '../models/User.js'
 
 //API controller function to manage clerk user with database
 
-const clerkWebhooks = async (req,res) => {
+export const clerkWebhooks = async (req,res) => {
   
 
     //crete a Svix instance with clerk webhook secret.
@@ -89,4 +89,3 @@ const clerkWebhooks = async (req,res) => {
     }
 };
 
-export default clerkWebhooks;
